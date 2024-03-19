@@ -62,7 +62,8 @@ class block_html_tutor extends block_base {
 
         $this->content = new stdClass;
         $this->content->footer = '';
-        if (isset($this->config->text) && ($USER->department != 'student' || is_siteadmin())) {
+        $department = $USER->department ?? '';
+        if (isset($this->config->text) && ($department == 'academic' || is_siteadmin())) {
             // rewrite url
             $this->config->text = file_rewrite_pluginfile_urls($this->config->text, 'pluginfile.php', $this->context->id, 'block_html_tutor', 'content', NULL);
             // Default to FORMAT_HTML which is what will have been used before the
