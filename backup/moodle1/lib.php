@@ -22,22 +22,31 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Block conversion handler for html
  */
 class moodle1_block_html_tutor_handler extends moodle1_block_handler {
+    /**
+     * File manager
+     *
+     * @var moodle1_file_manager
+     */
     private $fileman = null;
+    /**
+     * Convert config
+     *
+     * @param array $olddata
+     * @return string
+     */
     protected function convert_configdata(array $olddata) {
         $instanceid = $olddata['id'];
         $contextid  = $this->converter->get_contextid(CONTEXT_BLOCK, $olddata['id']);
         $configdata = unserialize_object(base64_decode($olddata['configdata']));
 
-        // get a fresh new file manager for this instance
+        // Get a fresh new file manager for this instance.
         $this->fileman = $this->converter->get_file_manager($contextid, 'block_html_tutor');
 
-        // convert course files embedded in the block content
+        // Convert course files embedded in the block content.
         $this->fileman->filearea = 'content';
         $this->fileman->itemid   = 0;
         $configdata->text = moodle1_converter::migrate_referenced_files($configdata->text ?? '', $this->fileman);
@@ -46,12 +55,19 @@ class moodle1_block_html_tutor_handler extends moodle1_block_handler {
         return base64_encode(serialize($configdata));
     }
 
+    /**
+     * Write info xml
+     *
+     * @param array $newdata
+     * @param array $data
+     * @return void
+     */
     protected function write_inforef_xml($newdata, $data) {
         $this->open_xml_writer("course/blocks/{$data['name']}_{$data['id']}/inforef.xml");
         $this->xmlwriter->begin_tag('inforef');
         $this->xmlwriter->begin_tag('fileref');
         foreach ($this->fileman->get_fileids() as $fileid) {
-            $this->write_xml('file', array('id' => $fileid));
+            $this->write_xml('file', ['id' => $fileid]);
         }
         $this->xmlwriter->end_tag('fileref');
         $this->xmlwriter->end_tag('inforef');
